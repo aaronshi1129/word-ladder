@@ -1,0 +1,344 @@
+<html><head><base href="/">
+    <title>Word Ladder Challenge</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(5px);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .difficulty-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background: #f0f0f0;
+            color: #555;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .difficulty-btn.active {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .word-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            font-size: 2rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            color: #2c3e50;
+        }
+
+        .word-display.visible {
+            opacity: 1;
+        }
+
+        .word-display span {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            border-radius: 10px;
+            margin: 0 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .word-chain {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 25px 0;
+            min-height: 60px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .word-item {
+            background: #e9ecef;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            color: #495057;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .word-item:hover {
+            transform: scale(1.05);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            outline: none;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .hint { background: #cce5ff; color: #004085; border-left: 4px solid #0d6efd; }
+
+        .timer {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 15px 0;
+            text-align: center;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .game-controls {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .game-controls.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .author {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Ladder Challenge</h1>
+        
+        <div class="difficulty-selector">
+            <button class="difficulty-btn" data-difficulty="easy">Easy</button>
+            <button class="difficulty-btn" data-difficulty="intermediate">Intermediate</button>
+            <button class="difficulty-btn" data-difficulty="advanced">Advanced</button>
+        </div>
+
+        <div class="timer" id="timer">Time: 0:00</div>
+
+        <div class="word-display" id="word-display">
+            <span id="start-word">___</span>
+            &#x2192;
+            <span id="target-word">___</span>
+        </div>
+
+        <div class="game-controls" id="game-controls">
+            <div class="word-chain" id="word-chain"></div>
+            <input type="text" id="word-input" placeholder="Enter your word...">
+            <button id="submit-word">Submit</button>
+            <button id="hint-btn">Get Hint</button>
+            <button id="new-game">New Game</button>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+    <div class="author">
+        Author: Aaron Shi. Released in January 2025.
+    </div>
+    <script>const wordLists = {
+  easy: ['CAT', 'DOG', 'PIG', 'BAT', 'RAT', 'HAT', 'MAT', 'PAT', 'SAT', 'FAT', 'COT', 'DOT', 'HOT', 'POT', 'GOT', 'LOT', 'NET', 'PET', 'SET', 'WET', 'BIT', 'FIT', 'HIT', 'LIT', 'PIT', 'SIT', 'BED', 'LED', 'RED', 'WED', 'BOX', 'FOX', 'LAX', 'MAX', 'TAX', 'WAX', 'BUN', 'FUN', 'RUN', 'SUN'],
+  intermediate: ['BOAT', 'COAT', 'GOAT', 'HEAT', 'MEAT', 'NEAT', 'SEAT', 'BEAT', 'FEAT', 'LATE', 'MATE', 'RATE', 'GATE', 'TALE', 'PALE', 'SALE', 'SAME', 'SAVE', 'WAVE', 'WAKE', 'BEAR', 'FEAR', 'GEAR', 'HEAR', 'NEAR', 'PEAR', 'REAR', 'TEAR', 'WEAR', 'YEAR', 'BLUE', 'CLUE', 'GLUE', 'TRUE', 'CAVE', 'DIVE', 'FIVE', 'HIVE', 'LIVE', 'WISE'],
+  advanced: ['PLANET', 'PLANES', 'PLATES', 'PLATER', 'PLAYER', 'FLOWER', 'FLOWED', 'FLAWED', 'FLAMES', 'FRAMES', 'GARDEN', 'HARDEN', 'HANDLE', 'CARING', 'DARING', 'DATING', 'EATING', 'ENDING', 'SENDER', 'TENDER', 'STABLE', 'STAPLE', 'STARED', 'SHARED', 'SHAVED', 'SHAKEN', 'SPOKEN', 'SPIDER', 'SLIDER', 'SILVER', 'BURDEN', 'BURIED', 'BURNED', 'TURNED', 'SINGLE', 'SIMPLE', 'SAMPLE', 'SCARED', 'SPARED', 'SPREAD']
+};
+let currentDifficulty = '';
+let startWord = '';
+let targetWord = '';
+let currentChain = [];
+let timerInterval;
+let startTime;
+function updateTimer() {
+  const currentTime = new Date().getTime();
+  const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = elapsedSeconds % 60;
+  document.getElementById('timer').textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+function startTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+  startTime = new Date().getTime();
+  timerInterval = setInterval(updateTimer, 1000);
+}
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+}
+function initializeGame(difficulty) {
+  currentDifficulty = difficulty;
+  const words = wordLists[difficulty];
+  startWord = words[Math.floor(Math.random() * words.length)];
+  do {
+    targetWord = words[Math.floor(Math.random() * words.length)];
+  } while (targetWord === startWord);
+  currentChain = [startWord];
+  document.getElementById('start-word').textContent = startWord;
+  document.getElementById('target-word').textContent = targetWord;
+  document.getElementById('word-chain').innerHTML = `<div class="word-item">${startWord}</div>`;
+  document.getElementById('word-input').value = '';
+  document.getElementById('message').textContent = '';
+  updateDifficultyButtons();
+  document.getElementById('word-display').classList.add('visible');
+  document.getElementById('game-controls').classList.add('visible');
+  startTimer();
+}
+function updateDifficultyButtons() {
+  document.querySelectorAll('.difficulty-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.difficulty === currentDifficulty);
+  });
+}
+function isValidWord(word) {
+  return wordLists[currentDifficulty].includes(word.toUpperCase());
+}
+function differsByOneLetter(word1, word2) {
+  if (word1.length !== word2.length) return false;
+  let differences = 0;
+  for (let i = 0; i < word1.length; i++) {
+    if (word1[i] !== word2[i]) differences++;
+  }
+  return differences === 1;
+}
+function getHint() {
+  const currentWord = currentChain[currentChain.length - 1];
+  const possibleWords = wordLists[currentDifficulty].filter(word => differsByOneLetter(word, currentWord) && !currentChain.includes(word));
+  if (possibleWords.length > 0) {
+    const hintWord = possibleWords[Math.floor(Math.random() * possibleWords.length)];
+    document.getElementById('message').className = 'message hint';
+    document.getElementById('message').textContent = `Try the word: ${hintWord}`;
+  } else {
+    document.getElementById('message').className = 'message error';
+    document.getElementById('message').textContent = 'No hints available!';
+  }
+}
+document.querySelectorAll('.difficulty-btn').forEach(btn => {
+  btn.addEventListener('click', () => initializeGame(btn.dataset.difficulty));
+});
+document.getElementById('submit-word').addEventListener('click', () => {
+  const input = document.getElementById('word-input');
+  const word = input.value.toUpperCase();
+  const lastWord = currentChain[currentChain.length - 1];
+  if (!isValidWord(word)) {
+    document.getElementById('message').className = 'message error';
+    document.getElementById('message').textContent = 'Not a valid word!';
+    return;
+  }
+  if (!differsByOneLetter(lastWord, word)) {
+    document.getElementById('message').className = 'message error';
+    document.getElementById('message').textContent = 'You can only change one letter at a time!';
+    return;
+  }
+  currentChain.push(word);
+  document.getElementById('word-chain').innerHTML = currentChain.map(w => `<div class="word-item">${w}</div>`).join('');
+  input.value = '';
+  if (word === targetWord) {
+    stopTimer();
+    document.getElementById('message').className = 'message success';
+    const finalTime = document.getElementById('timer').textContent;
+    document.getElementById('message').textContent = `Congratulations! You've completed the word ladder! ${finalTime}`;
+  }
+});
+document.getElementById('hint-btn').addEventListener('click', getHint);
+document.getElementById('new-game').addEventListener('click', () => initializeGame(currentDifficulty));
+document.getElementById('word-display').classList.remove('visible');
+document.getElementById('game-controls').classList.remove('visible');</script>
+</body></html>
